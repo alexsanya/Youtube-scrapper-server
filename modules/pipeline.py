@@ -6,6 +6,7 @@ import os
 import pytube
 import cv2
 import time
+import base64
 from skimage.metrics import structural_similarity as ssim
 import concurrent.futures
 
@@ -133,11 +134,22 @@ async def processing_pipeline(websocket: WebSocket, video_url: str):
     while (len(frames_to_process) > 0):
         with concurrent.futures.ThreadPoolExecutor() as pool:
             face, frames_to_process = await loop.run_in_executor(pool, process_frames, frames_dir, len(all_frames), frames_to_process, unique_faces)
-            await websocket.send_json({"step": "New face been detected", "time": time.time()})
-            unique_faces.append(face)
             try:
+                retval, buffer = cv2.imencode('.jpg', face)
+                serialized_picture = base64.b64encode(buffer)
+                await websocket.send_json({
+                    "step": "New face been detected",
+                    "picture": serialized_picture.decode(),
+                    "time": time.time()
+                })
+                unique_faces.append(face)
                 cv2.imwrite(f'{artifacts_dir}/{len(unique_faces)}.jpg', face)
             except:
                 pass
+    await websocket.send_json({
+        "last": True
+    })
+
+
 
 
