@@ -21,6 +21,13 @@ DOWNLOAD_PATH = './video'
 face_cascade = cv2.CascadeClassifier('./haarcascades/haarcascade_frontalface_default.xml')
 eye_cascade = cv2.CascadeClassifier('./haarcascades/haarcascade_eye.xml')
 
+def get_video_info(video_url: str):
+    video = pytube.YouTube(video_url)
+    return {
+        "title": video.title,
+        "preview": video.thumbnail_url
+    }
+
 def download_video(*args):
     video_url, *_ = args
     if not os.path.exists(DOWNLOAD_PATH):
@@ -116,6 +123,7 @@ async def processing_pipeline(websocket: WebSocket, video_url: str):
     loop = asyncio.get_running_loop()
 
     logger.debug(f"New pipeline has started. Url: {video_url}")
+
     params = (video_url,)
     for stage in stages:
         await websocket.send_json({"step": stage["name"], "time": time.time()})
