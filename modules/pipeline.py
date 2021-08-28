@@ -9,6 +9,7 @@ import time
 import base64
 from skimage.metrics import structural_similarity as ssim
 import concurrent.futures
+import shutil
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -33,7 +34,6 @@ def download_video(*args):
     if not os.path.exists(DOWNLOAD_PATH):
         os.mkdir(DOWNLOAD_PATH)
     video = pytube.YouTube(video_url)
-    stream = video.streams
     stream = video.streams.get_by_resolution('360p')
     filename = hashlib.md5(video_url.encode()).hexdigest()
     stream.download(DOWNLOAD_PATH, filename=filename)
@@ -63,6 +63,7 @@ def video_to_frames(*args):
             print(f"Processes {count}/{video_length}")
     time_end = time.time()
     cap.release()
+    os.remove(fullpath)
     logger.debug(f"Done extracting frames.\n{count} frames extracted")
     logger.debug(f"It took {time_end-time_start} seconds for conversion.")
     return (filename, frames_dir)
@@ -157,6 +158,8 @@ async def processing_pipeline(websocket: WebSocket, video_url: str):
     await websocket.send_json({
         "last": True
     })
+    shutil.rmtree(artifacts_dir)
+    shutil.rmtree(frames_dir)
 
 
 
