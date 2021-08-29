@@ -1,7 +1,7 @@
 from fastapi import FastAPI, WebSocket
 import logging
 import pytube
-from modules.pipeline import processing_pipeline
+from modules.processing import processing_pipeline
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -35,5 +35,5 @@ def get_video_info(video_url: str):
 @app.websocket("/process")
 async def processing_endpoint(websocket: WebSocket, video: str):
     await websocket.accept()
-    await processing_pipeline(websocket, video)
     logger.debug(f"New client connected. Url: {video}")
+    await processing_pipeline(websocket, video)
