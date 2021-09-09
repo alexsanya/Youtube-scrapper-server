@@ -14,7 +14,7 @@ logger.addHandler(ch)
 
 async def processing_pipeline(websocket: WebSocket, video_url: str):
     events_queue = asyncio.Queue()
-    frames_queue = asyncio.Queue(maxsize = 500)
+    frames_queue = asyncio.Queue(maxsize = 50)
     filename, fullname = await download_video(video_url, events_queue)
     logger.debug(f"Uploaded {filename}")
     logger.debug(fullname)

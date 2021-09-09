@@ -28,7 +28,7 @@ async def split_to_frames(file, frames_queue):
         if not count % 5 ==0:
             continue
         print(f"Frame number {count}")
-        frames_queue.put_nowait([frame, False])
+        await frames_queue.put([frame, False])
     time_end = time.time()
     cap.release()
     await frames_queue.put([None, True]);
