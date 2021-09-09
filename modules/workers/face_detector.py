@@ -45,13 +45,14 @@ async def get_all_faces(frame):
         cropped.append(face_only)
     return cropped
 
-async def detect_faces(frames_queue, events_queue):
+async def detect_faces(frames_total, frames_queue, events_queue):
     TRESHOLD = 0.5
     count=0
     unique_faces = []
     while True:
         frame, isFinal = await frames_queue.get()
         if (count % 10 == 0):
+            events_queue.put_nowait({"progress": count*5 / frames_total})
             print(f"Received {count}")
         count+=1
         if isFinal == True:

@@ -15,11 +15,10 @@ logger.addHandler(ch)
 async def processing_pipeline(websocket: WebSocket, video_url: str):
     events_queue = asyncio.Queue()
     frames_queue = asyncio.Queue(maxsize = 50)
-    filename, fullname = await download_video(video_url, events_queue)
+    filename, fullname, frames_total = await download_video(video_url, events_queue)
     logger.debug(f"Uploaded {filename}")
-    logger.debug(fullname)
     frames_split_worker = asyncio.create_task(split_to_frames(fullname, frames_queue))
-    face_detection_worker = asyncio.create_task(detect_faces(frames_queue, events_queue))
+    face_detection_worker = asyncio.create_task(detect_faces(frames_total, frames_queue, events_queue))
     notifications_worker = asyncio.create_task(notify_client(events_queue, websocket))
     tasks = [frames_split_worker, face_detection_worker, notifications_worker]
     await asyncio.gather(*tasks, return_exceptions=True)

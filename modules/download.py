@@ -1,4 +1,5 @@
 import os
+import cv2
 import pytube
 import hashlib
 import asyncio
@@ -18,7 +19,12 @@ async def download_video(video_url, events_queue):
     events_queue.put_nowait({"step": "Downloading video"})
     with concurrent.futures.ThreadPoolExecutor() as pool:
         filename, full_path = await loop.run_in_executor(pool, run_download_video, video_url)
-    return (filename, full_path)
+
+    cap = cv2.VideoCapture(full_path)
+    frames_total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    logging.debug(f"Number of frames: {frames_total}")
+
+    return (filename, full_path, frames_total)
 
 def run_download_video(video_url):
     logger.debug("Downloading video...")
